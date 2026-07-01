@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda do Samba 🥁</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen pb-12">
+
+  <header class="bg-blue-600 text-white py-6 shadow-md text-center mb-8">
+    <h1 class="text-3xl font-bold tracking-wide">🥁 Agenda Grupo Deixa de Caô</h1>
+    <p class="text-blue-100 mt-1">Gerencie os shows, horários, fardas e cachês</p>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+    
+    <section class="bg-white p-6 rounded-lg shadow-md md:col-span-1 h-fit">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Novo Evento</h2>
+      
+      <form id="form-evento" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Local do Show</label>
+          <input type="text" id="local" required class="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: Cacique de Ramos">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Horário</label>
+            <input type="text" id="horario" required class="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: 19:00">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Dia da Semana</label>
+            <input type="text" id="diaDaSemana" required class="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: Sábado">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Blusa da Farda</label>
+          <input type="text" id="blusa" class="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: Listrada Verde e Branca">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Bermuda/Calça</label>
+          <input type="text" id="bermuda" class="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: Bermuda Branca">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Valor do Cachê (R$)</label>
+          <input type="number" step="0.01" id="cache" class="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: 1500.00">
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 shadow">
+          Agendar Evento 🎶
+        </button>
+      </form>
+    </section>
+
+    <section class="md:col-span-2">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-4 border-b pb-2">
+          <h2 class="text-xl font-semibold text-gray-800">Próximos Shows</h2>
+          <span id="contador" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">0 eventos</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider border-b">
+                <th class="py-3 px-4">Local / Quando</th>
+                <th class="py-3 px-4">Uniforme</th>
+                <th class="py-3 px-4">Cachê</th> <th class="py-3 px-4 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-eventos" class="divide-y text-gray-700">
+              <tr>
+                <td colspan="4" class="text-center py-8 text-gray-400 italic">Carregando a agenda...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const API_URL = 'http://localhost:3000/eventos';
+
+    const form = document.getElementById('form-evento');
+    const tabela = document.getElementById('tabela-eventos');
+    const contador = document.getElementById('contador');
+
+    // Função auxiliar para formatar dinheiro em formato brasileiro (R$ 1.500,00)
+    function formatarDinheiro(valor) {
+      if (!valor) return 'Não informado';
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+    }
+
+    async function carregarEventos() {
+      try {
+        const resposta = await fetch(API_URL);
+        const eventos = await resposta.json();
+
+        contador.innerText = `${eventos.length} ${eventos.length === 1 ? 'evento' : 'eventos'}`;
+        tabela.innerHTML = '';
+
+        if (eventos.length === 0) {
+          tabela.innerHTML = `
+            <tr>
+              <td colspan="4" class="text-center py-8 text-gray-400 italic">Nenhum show agendado por enquanto. 🪕</td>
+            </tr>
+          `;
+          return;
+        }
+
+        eventos.forEach(evento => {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-gray-50 transition";
+          tr.innerHTML = `
+            <td class="py-4 px-4">
+              <div class="font-bold text-gray-900">${evento.local}</div>
+              <div class="text-sm text-gray-500">${evento.diaDaSemana} às ${evento.horario}</div>
+            </td>
+            <td class="py-4 px-4 text-sm">
+              <span class="block">👕 ${evento.blusa || 'Não definida'}</span>
+              <span class="block">🩳 ${evento.bermuda || 'Não definida'}</span>
+            </td>
+            <td class="py-4 px-4 text-sm font-semibold text-green-600">
+              ${formatarDinheiro(evento.cache)}
+            </td>
+            <td class="py-4 px-4 text-center">
+              <button onclick="deletarEvento(${evento.id})" class="bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 font-medium py-1 px-3 rounded border border-red-200 transition text-sm">
+                Excluir
+              </button>
+            </td>
+          `;
+          tabela.appendChild(tr);
+        });
+
+      } catch (error) {
+        console.error("Erro ao carregar eventos:", error);
+        tabela.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center py-8 text-red-500 font-medium">Não foi possível conectar ao servidor. O back-end está rodando?</td>
+          </tr>
+        `;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const cacheInput = document.getElementById('cache').value;
+
+      const dadosFormulario = {
+        local: document.getElementById('local').value,
+        horario: document.getElementById('horario').value,
+        diaDaSemana: document.getElementById('diaDaSemana').value,
+        blusa: document.getElementById('blusa').value,
+        bermuda: document.getElementById('bermuda').value,
+        cache: cacheInput ? Number(cacheInput) : null // Envia como número ou null
+      };
+
+      try {
+        const resposta = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dadosFormulario)
+        });
+
+        if (resposta.ok) {
+          form.reset();
+          carregarEventos();
+        } else {
+          alert('Erro ao salvar o evento. Verifique os campos.');
+        }
+      } catch (error) {
+        console.error("Erro ao cadastrar:", error);
+        alert('Erro ao se conectar com a API.');
+      }
+    });
+
+    async function deletarEvento(id) {
+      if (!confirm("Tem certeza que deseja remover esse show da agenda?")) return;
+
+      try {
+        const resposta = await fetch(`${API_URL}/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (resposta.ok) {
+          carregarEventos();
+        } else {
+          alert('Não foi possível deletar o evento.');
+        }
+      } catch (error) {
+        console.error("Erro ao deletar:", error);
+      }
+    }
+
+    carregarEventos();
+  </script>
+</body>
+</html>

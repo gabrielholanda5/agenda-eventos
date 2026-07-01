@@ -11,3 +11,15 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Evento {
+  id           Int    @id @default(autoincrement())
+  local        String
+  horario      String
+  diaDaSemana  String @map("dia_da_semana") // No JS: diaDaSemana | No Postgres: dia_da_semana
+  blusa        String
+  bermuda      String
+  cache        Float?
+
+  @@map("eventos") // No JS: prisma.evento | No Postgres: tabela "eventos"
+}

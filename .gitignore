@@ -1,2 +1,18 @@
+# Dependências do Node (pasta extremamente pesada)
 node_modules/
 
+# Variáveis de ambiente (contém senhas e credenciais locais)
+.env
+
+# Arquivos gerados automaticamente pelo Prisma Client
+/generated/
+prisma/generated/
+
+# Logs do npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos do sistema operacional / IDEs (opcional, mas recomendado)
+.DS_Store
+.vscode/
