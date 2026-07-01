@@ -25,7 +25,7 @@ O projeto foi construído utilizando as seguintes tecnologias e ferramentas:
 * **Arquitetura em Camadas:** Código organizado seguindo o padrão de Controllers e Services para melhor separação de responsabilidades.
 * **Segurança Cross-Origin:** Suporte a requisições vindas de diferentes origens configurado via middleware CORS.
 
----
+
 
 
 
